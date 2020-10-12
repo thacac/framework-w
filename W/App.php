@@ -5,13 +5,13 @@ namespace W;
 /**
  * Gère la configuration et exécute le routeur
  */
-class App 
+class App
 {
 	/** 
 	 * @var array Contient le tableau de configuration complet 
 	 */
 	protected $config;
-	
+
 	/** 
 	 * @var \AltoRouter Le routeur 
 	 */
@@ -22,6 +22,11 @@ class App
 	 */
 	protected $basePath;
 
+	/** 
+	 * @var string Langage à appliquer 
+	 */
+	public $langage;
+
 	/**
 	 * Constructeur
 	 * @param array $w_routes Tableau de routes
@@ -30,8 +35,55 @@ class App
 	public function __construct(array $w_routes, array $w_config = array())
 	{
 		session_start();
+		$this->setLangage($w_routes);
+		$this->langage = $_SESSION['lang'];
 		$this->setConfig($w_config);
 		$this->routingSetup($w_routes);
+	}
+
+	/**
+	 * define site langage
+	 *
+	 * @param string $lang //target langage
+	 * @return void
+	 */
+	private function setLangage(array $w_routes)
+	{
+		$browserLang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
+
+		$urlLang =  (explode('/', $_SERVER['REQUEST_URI'])[1] !== "") ? explode('/', $_SERVER['REQUEST_URI'])[1] : $browserLang;
+
+		if (!isset($_SESSION['lang'])) {
+			if (in_array($browserLang, $this->getAvailLang($w_routes))) {
+				$_SESSION['lang'] = $browserLang;
+			} elseif (in_array($urlLang, $this->getAvailLang($w_routes))) {
+				$_SESSION['lang'] = $urlLang;
+			} else {
+				$_SESSION['lang'] = getApp()->getConfig('default_lang');
+			}
+		} else {
+			if (in_array($urlLang, $this->getAvailLang($w_routes))) {
+				$_SESSION['lang'] = $urlLang;
+			}
+		}
+	}
+
+	private function getAvailLang(array $w_routes)
+	{
+		foreach ($w_routes as $route => $details) {
+			foreach ($details as $lang => $value) {
+				$availLang[] = ($lang !== 'method' && $lang !== 'controller') ? $lang : null;
+			}
+		}
+
+		return $availLang;
+	}
+	private function getRoutesPerLang(array $w_routes)
+	{
+		foreach ($w_routes as $route => $details) {
+			$routes[] = [$details['method'], '/' . $this->langage . $details[$this->langage]['path'], $details['controller'], $route];
+		}
+		return $routes;
 	}
 
 	/**
@@ -40,14 +92,14 @@ class App
 	 */
 	private function routingSetup(array $w_routes)
 	{
+
 		$this->router = new \AltoRouter();
 
 		//voir public/.htaccess
 		//permet d'éviter une configuration désagréable (sous-dossier menant à l'appli)
 		$this->basePath = (empty($_SERVER['W_BASE'])) ? '' : $_SERVER['W_BASE'];
-
 		$this->router->setBasePath($this->basePath);
-		$this->router->addRoutes($w_routes);
+		$this->router->addRoutes($this->getRoutesPerLang($w_routes));
 	}
 
 	/**
@@ -70,9 +122,9 @@ class App
 			//authentification, autorisation
 			'security_user_table' 		=> 'users',			//nom de la table contenant les infos des utilisateurs
 			'security_id_property' 		=> 'id',			//nom de la colonne pour la clé primaire
-			'security_username_property'=> 'username',		//nom de la colonne pour le "pseudo"
+			'security_username_property' => 'username',		//nom de la colonne pour le "pseudo"
 			'security_email_property' 	=> 'email',			//nom de la colonne pour l'"email"
-			'security_password_property'=> 'password',		//nom de la colonne pour le "mot de passe"
+			'security_password_property' => 'password',		//nom de la colonne pour le "mot de passe"
 			'security_role_property' 	=> 'role',			//nom de la colonne pour le "role"
 
 			'security_login_route_name' => 'login',			//nom de la route affichant le formulaire de connexion
@@ -128,13 +180,12 @@ class App
 	 * Retourne le nom de la route actuelle
 	 * @return mixed Le nom de la route actuelle depuis \AltoRouter ou false
 	 */
-	public function getCurrentRoute(){
-
+	public function getCurrentRoute()
+	{
 		$route = $this->getRouter()->match();
-		if($route){
+		if ($route) {
 			return $route['name'];
-		}
-		else {
+		} else {
 			return false;
 		}
 	}

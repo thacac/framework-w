@@ -11,6 +11,6 @@ class DefaultController extends \W\Controller\Controller
 	 */
 	public function home()
 	{
-		echo 'Hello World';
+		$this->render('home/home');
 	}
 }

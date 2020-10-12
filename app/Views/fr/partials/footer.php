@@ -1,0 +1,4 @@
+<footer>
+
+    footer français
+</footer>

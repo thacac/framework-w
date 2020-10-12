@@ -10,4 +10,5 @@
 
 	# Réécrit tout le reste à public/index.php.
 	RewriteRule .? %{ENV:W_BASE}/index.php [L]
+
 </IfModule>

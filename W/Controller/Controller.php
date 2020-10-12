@@ -16,7 +16,6 @@ class Controller
 	 */
 	const PATH_VIEWS = '../app/Views';
 
-
 	/**
 	 * Permet l'ajout de données additionnelles aux templates
 	 */
@@ -138,6 +137,7 @@ class Controller
 				'w_user' 		  => $this->getUser(),
 				'w_current_route' => $app->getCurrentRoute(),
 				'w_site_name'	  => $app->getConfig('site_name'),
+				'w_lang'	  => $_SESSION['lang'],
 				'w_flash_message' => $flash_message,
 			]
 		);
@@ -165,7 +165,7 @@ class Controller
 	 */
 	public function render($file, array $data = array())
 	{
-		$this->show($file, $data);
+		$this->show($_SESSION['lang'].'/'.$file, $data);
 	}
 
 	/**
@@ -175,9 +175,9 @@ class Controller
 	{
 		header('HTTP/1.0 403 Forbidden');
 
-		$file = self::PATH_VIEWS.'/w_errors/403.php';
+		$file = self::PATH_VIEWS.'/'.$_SESSION['lang'].'/w_errors/403.php';
 		if(file_exists($file)){
-			$this->show('w_errors/403', ['error_message' => $error_message ?? '']);
+			$this->show($_SESSION['lang'].'/w_errors/403', ['error_message' => $error_message ?? '']);
 		}
 		else {
 			die('403');
@@ -199,9 +199,9 @@ class Controller
 	{
 		header('HTTP/1.0 404 Not Found');
 
-		$file = self::PATH_VIEWS.'/w_errors/404.php';
+		$file = self::PATH_VIEWS.'/'.$_SESSION['lang'].'/w_errors/404.php';
 		if(file_exists($file)){
-			$this->show('w_errors/404', ['error_message' => $error_message ?? '']);
+			$this->show($_SESSION['lang'].'/w_errors/404', ['error_message' => $error_message ?? '']);
 		}
 		else {
 			die('404');
