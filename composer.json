@@ -1,8 +1,8 @@
 {
-    "name": "framework-w/framework-w",
-    "description": "Light & powerful PHP framework",
+    "name": "thacac/framework-w-multi",
+    "description": "Light & powerful PHP framework for multilingue sites",
     "keywords": ["framework", "mvc", "php"],
-    "version": "2.1.1",
+    "version": "2.1.2",
     "minimum-stability": "dev",
     "license": "MIT",
     "prefer-stable": true,
@@ -21,6 +21,11 @@
             "name": "Guillaume Sylvestre",
             "email": "gsylvestre@gmail.com",
             "role": "Initial Developer"
+        },
+        {
+            "name": "Cedric Caccomo",
+            "email": "cedric@thecacproject.com",
+            "role": "Developer"
         }
     ],
     "require": {
@@ -40,7 +45,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/framework-w/framework-w"
+            "url": "https://github.com/thacac/framework-w"
         }
     ]
 }
