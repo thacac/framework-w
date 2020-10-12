@@ -35,6 +35,7 @@ class Controller
 		$app = getApp();
 		$router = $app->getRouter();
 		$routeUrl = $router->generate($routeName, $params);
+		$lang=$app->getLang();
 		$url = $routeUrl;
 		if($absolute){
 			// Définit le protocol
@@ -52,7 +53,7 @@ class Controller
 				$baseUrl.= ':'. (int) $_SERVER['SERVER_PORT'];
 			}
 
-			$url = $baseUrl . $routeUrl;
+			$url = $baseUrl .'/'. $lang.$routeUrl;
 		}
 		return $url;
 	}
@@ -137,7 +138,7 @@ class Controller
 				'w_user' 		  => $this->getUser(),
 				'w_current_route' => $app->getCurrentRoute(),
 				'w_site_name'	  => $app->getConfig('site_name'),
-				'w_lang'	  => $_SESSION['lang'],
+				'w_lang'	  => $app->getLang(),
 				'w_flash_message' => $flash_message,
 			]
 		);
@@ -165,7 +166,8 @@ class Controller
 	 */
 	public function render($file, array $data = array())
 	{
-		$this->show($_SESSION['lang'].'/'.$file, $data);
+		$app = getApp();		
+		$this->show($app->getLang().'/'.$file, $data);
 	}
 
 	/**
@@ -173,11 +175,12 @@ class Controller
 	 */
 	public function showForbidden($error_message = null)
 	{
+		$app = getApp();
 		header('HTTP/1.0 403 Forbidden');
 
 		$file = self::PATH_VIEWS.'/'.$_SESSION['lang'].'/w_errors/403.php';
 		if(file_exists($file)){
-			$this->show($_SESSION['lang'].'/w_errors/403', ['error_message' => $error_message ?? '']);
+			$this->show($app->getLang().'/w_errors/403', ['error_message' => $error_message ?? '']);
 		}
 		else {
 			die('403');
@@ -201,7 +204,8 @@ class Controller
 
 		$file = self::PATH_VIEWS.'/'.$_SESSION['lang'].'/w_errors/404.php';
 		if(file_exists($file)){
-			$this->show($_SESSION['lang'].'/w_errors/404', ['error_message' => $error_message ?? '']);
+			$app = getApp();
+			$this->show($app->getLang().'/w_errors/404', ['error_message' => $error_message ?? '']);
 		}
 		else {
 			die('404');

@@ -25,7 +25,7 @@ class App
 	/** 
 	 * @var string Langage à appliquer 
 	 */
-	public $langage;
+	public $langage = '';
 
 	/**
 	 * Constructeur
@@ -35,9 +35,8 @@ class App
 	public function __construct(array $w_routes, array $w_config = array())
 	{
 		session_start();
-		$this->setLangage($w_routes);
-		$this->langage = $_SESSION['lang'];
 		$this->setConfig($w_config);
+		$this->setLangage($w_routes);
 		$this->routingSetup($w_routes);
 	}
 
@@ -50,22 +49,18 @@ class App
 	private function setLangage(array $w_routes)
 	{
 		$browserLang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
-
 		$urlLang =  (explode('/', $_SERVER['REQUEST_URI'])[1] !== "") ? explode('/', $_SERVER['REQUEST_URI'])[1] : $browserLang;
 
-		if (!isset($_SESSION['lang'])) {
-			if (in_array($browserLang, $this->getAvailLang($w_routes))) {
-				$_SESSION['lang'] = $browserLang;
-			} elseif (in_array($urlLang, $this->getAvailLang($w_routes))) {
-				$_SESSION['lang'] = $urlLang;
-			} else {
-				$_SESSION['lang'] = getApp()->getConfig('default_lang');
-			}
+		if (in_array($urlLang, $this->getAvailLang($w_routes))) {
+			$this->langage = $urlLang;
 		} else {
-			if (in_array($urlLang, $this->getAvailLang($w_routes))) {
-				$_SESSION['lang'] = $urlLang;
-			}
+			$this->langage = $this->getConfig('default_lang');
 		}
+	}
+
+	public function getLang()
+	{
+		return $this->langage;
 	}
 
 	private function getAvailLang(array $w_routes)
@@ -131,10 +126,14 @@ class App
 
 			// configuration globale
 			'site_name'			=> '',						// contiendra le nom du site
+
+			//current langage
+			'lang' => $this->langage
 		];
 
 		//remplace les configurations par défaut par celle de l'appli
 		$this->config = array_merge($defaultConfig, $w_config);
+		dump($this->config);
 	}
 
 
