@@ -58,12 +58,23 @@ class App
 		}
 	}
 
-	public function getLang()
+	/**
+	 * Get current langage value
+	 *
+	 * @return void
+	 */
+	public function getLang():string
 	{
 		return $this->langage;
 	}
 
-	private function getAvailLang(array $w_routes)
+	/**
+	 * get all available langages set in routes
+	 *
+	 * @param array $w_routes
+	 * @return array
+	 */
+	private function getAvailLang(array $w_routes):array
 	{
 		foreach ($w_routes as $route => $details) {
 			foreach ($details as $lang => $value) {
@@ -73,7 +84,14 @@ class App
 
 		return $availLang;
 	}
-	private function getRoutesPerLang(array $w_routes)
+
+	/**
+	 * compute routes table as per current activated langage
+	 *
+	 * @param array $w_routes
+	 * @return array
+	 */
+	private function getRoutesPerLang(array $w_routes):array
 	{
 		foreach ($w_routes as $route => $details) {
 			$routes[] = [$details['method'], '/' . $this->langage . $details[$this->langage]['path'], $details['controller'], $route];
@@ -133,7 +151,6 @@ class App
 
 		//remplace les configurations par défaut par celle de l'appli
 		$this->config = array_merge($defaultConfig, $w_config);
-		dump($this->config);
 	}
 
 

@@ -35,7 +35,6 @@ class Controller
 		$app = getApp();
 		$router = $app->getRouter();
 		$routeUrl = $router->generate($routeName, $params);
-		$lang=$app->getLang();
 		$url = $routeUrl;
 		if($absolute){
 			// Définit le protocol
@@ -52,8 +51,7 @@ class Controller
 			if(isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] != '80') {
 				$baseUrl.= ':'. (int) $_SERVER['SERVER_PORT'];
 			}
-
-			$url = $baseUrl .'/'. $lang.$routeUrl;
+			$url = $baseUrl.$routeUrl;
 		}
 		return $url;
 	}
@@ -110,7 +108,6 @@ class Controller
 	{
 		$this->flash($message, $level);
 	}
-
 
 	/**
 	 * Affiche un template
