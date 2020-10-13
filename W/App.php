@@ -13,6 +13,11 @@ class App
 	protected $config;
 
 	/** 
+	 * @var array Contient le tableau des rotues multilingues 
+	 */
+	protected $w_routes;
+
+	/** 
 	 * @var \AltoRouter Le routeur 
 	 */
 	protected $router;
@@ -30,13 +35,14 @@ class App
 	/**
 	 * Constructeur
 	 * @param array $w_routes Tableau de routes
+	 * @param array $w_routes_tech Tableau de routes techniques
 	 * @param array $w_config Tableau optionnel de configurations
 	 */
 	public function __construct(array $w_routes, array $w_config = array())
 	{
 		session_start();
 		$this->setConfig($w_config);
-		$this->setLangage($w_routes);
+		($this->getConfig('multilang') == true) ? $this->setLangage($w_routes) : false;
 		$this->routingSetup($w_routes);
 	}
 
@@ -46,7 +52,7 @@ class App
 	 * @param string $lang //target langage
 	 * @return void
 	 */
-	private function setLangage(array $w_routes)
+	public function setLangage(array $w_routes)
 	{
 		$browserLang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
 		$urlLang =  (explode('/', $_SERVER['REQUEST_URI'])[1] !== "") ? explode('/', $_SERVER['REQUEST_URI'])[1] : $browserLang;
@@ -63,38 +69,46 @@ class App
 	 *
 	 * @return void
 	 */
-	public function getLang():string
+	public function getLang(): string
 	{
 		return $this->langage;
 	}
 
 	/**
-	 * get all available langages set in routes
+	 * get all available langages set in routes if any
 	 *
 	 * @param array $w_routes
 	 * @return array
 	 */
-	private function getAvailLang(array $w_routes):array
+	private function getAvailLang(array $w_routes): array
 	{
 		foreach ($w_routes as $route => $details) {
-			foreach ($details as $lang => $value) {
-				$availLang[] = ($lang !== 'method' && $lang !== 'controller') ? $lang : null;
+			if (isset($details['multi']) && !empty($details['multi'])) {
+				foreach ($details['multi'] as $lang => $value) {
+					$availLang[] = $lang;
+				}
 			}
 		}
-
 		return $availLang;
 	}
 
 	/**
-	 * compute routes table as per current activated langage
+	 * compute global routes table with langage constraints
 	 *
 	 * @param array $w_routes
 	 * @return array
 	 */
-	private function getRoutesPerLang(array $w_routes):array
+	private function getRoutes(array $w_routes): array
 	{
 		foreach ($w_routes as $route => $details) {
-			$routes[] = [$details['method'], '/' . $this->langage . $details[$this->langage]['path'], $details['controller'], $route];
+
+			if (isset($details['multi']) && !empty($details['multi'])) {
+				if ($this->getLang() !== '') {
+					$routes[] = [$details['method'], '/' . $this->langage . $details['multi'][$this->langage]['path'], $details['controller'], $route];
+				}
+			} else {
+				$routes[] = [$details['method'], $details['path'], $details['controller'], $route];
+			}
 		}
 		return $routes;
 	}
@@ -107,12 +121,11 @@ class App
 	{
 
 		$this->router = new \AltoRouter();
-
 		//voir public/.htaccess
 		//permet d'éviter une configuration désagréable (sous-dossier menant à l'appli)
 		$this->basePath = (empty($_SERVER['W_BASE'])) ? '' : $_SERVER['W_BASE'];
 		$this->router->setBasePath($this->basePath);
-		$this->router->addRoutes($this->getRoutesPerLang($w_routes));
+		$this->router->addRoutes($this->getRoutes($w_routes));
 	}
 
 	/**
@@ -127,7 +140,6 @@ class App
 			'db_host' 			=> 'localhost',				//hôte (ip, domaine) de la bdd
 			'db_port'			=> 3306,					//port de connexion de la bdd
 			'db_user' 			=> 'root',					//nom d'utilisateur pour la bdd
-
 			'db_pass' 			=> '',						//mot de passe de la bdd
 			'db_name' 			=> '',						//nom de la bdd
 			'db_table_prefix' 	=> '',						//préfixe ajouté aux noms de table
@@ -144,9 +156,6 @@ class App
 
 			// configuration globale
 			'site_name'			=> '',						// contiendra le nom du site
-
-			//current langage
-			'lang' => $this->langage
 		];
 
 		//remplace les configurations par défaut par celle de l'appli

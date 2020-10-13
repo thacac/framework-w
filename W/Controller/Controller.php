@@ -16,6 +16,13 @@ class Controller
 	 */
 	const PATH_VIEWS = '../app/Views';
 
+	public $pathLang;
+
+	public function __construct()
+	{
+		$this->pathLang = (getApp()->getConfig('multilang')==true) ? '/'.getApp()->getLang() :  '';
+	}
+
 	/**
 	 * Permet l'ajout de données additionnelles aux templates
 	 */
@@ -147,9 +154,8 @@ class Controller
 
 		// Retire l'éventuelle extension .php
 		$file = str_replace('.php', '', $file);
-
-		// Affiche le template
-		echo $engine->render($file, $data);
+		// Affiche le template en fonction de la langue
+		echo $engine->render($this->pathLang.$file, $data);
 		
 		// Supprime les messages flash pour qu'ils n'apparaissent qu'une fois
 		if(isset($_SESSION['flash'])) {
@@ -162,9 +168,8 @@ class Controller
 	 * Alias de méthode
 	 */
 	public function render($file, array $data = array())
-	{
-		$app = getApp();		
-		$this->show($app->getLang().'/'.$file, $data);
+	{		
+		$this->show($file, $data);
 	}
 
 	/**
@@ -172,12 +177,11 @@ class Controller
 	 */
 	public function showForbidden($error_message = null)
 	{
-		$app = getApp();
 		header('HTTP/1.0 403 Forbidden');
-
-		$file = self::PATH_VIEWS.'/'.$_SESSION['lang'].'/w_errors/403.php';
+		
+		$file = self::PATH_VIEWS.$this->pathLang.'/w_errors/403.php';
 		if(file_exists($file)){
-			$this->show($app->getLang().'/w_errors/403', ['error_message' => $error_message ?? '']);
+			$this->show($this->pathLang.'/w_errors/403', ['error_message' => $error_message ?? '']);
 		}
 		else {
 			die('403');
@@ -199,10 +203,9 @@ class Controller
 	{
 		header('HTTP/1.0 404 Not Found');
 
-		$file = self::PATH_VIEWS.'/'.$_SESSION['lang'].'/w_errors/404.php';
+		$file = self::PATH_VIEWS.$this->pathLang.'/w_errors/404.php';
 		if(file_exists($file)){
-			$app = getApp();
-			$this->show($app->getLang().'/w_errors/404', ['error_message' => $error_message ?? '']);
+			$this->show($this->pathLang.'/w_errors/404', ['error_message' => $error_message ?? '']);
 		}
 		else {
 			die('404');
@@ -216,7 +219,6 @@ class Controller
 	{
 		$this->showNotFound($error_message);
 	}
-
 
 	/**
 	 * Récupère l'utilisateur actuellement connecté
@@ -246,10 +248,8 @@ class Controller
 				return true;
 			}
 		}
-
 		$this->showForbidden($error_message);
 	}
-
 
 	/**
 	 * Retourne une réponse JSON au client
@@ -275,7 +275,6 @@ class Controller
 	{
 		$this->showJson($data);
 	}
-
 
 	/**
 	 * Retourne l'URL relative d'un asset
