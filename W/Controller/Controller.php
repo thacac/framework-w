@@ -181,7 +181,7 @@ class Controller
 		
 		$file = self::PATH_VIEWS.$this->pathLang.'/w_errors/403.php';
 		if(file_exists($file)){
-			$this->show($this->pathLang.'/w_errors/403', ['error_message' => $error_message ?? '']);
+			$this->show('/w_errors/403', ['error_message' => $error_message ?? '']);
 		}
 		else {
 			die('403');
@@ -205,7 +205,7 @@ class Controller
 
 		$file = self::PATH_VIEWS.$this->pathLang.'/w_errors/404.php';
 		if(file_exists($file)){
-			$this->show($this->pathLang.'/w_errors/404', ['error_message' => $error_message ?? '']);
+			$this->show('/w_errors/404', ['error_message' => $error_message ?? '']);
 		}
 		else {
 			die('404');
