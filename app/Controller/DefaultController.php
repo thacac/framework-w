@@ -2,9 +2,11 @@
 
 namespace Controller;
 
-class DefaultController extends \W\Controller\Controller
-{
+use Controller\MasterController;
 
+class DefaultController extends MasterController
+{
+	
 	/**
 	 * Your homepage no multi lang
 	 */

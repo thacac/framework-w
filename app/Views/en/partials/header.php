@@ -10,7 +10,7 @@
                     <a class="nav-link" href="<?= $this->url('index') ?>">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="<?= $this->url('nolang') ?>">Home (no multi)<span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="<?= $this->url($w_admin_pref.'index') ?>">Admin</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/fr/">FR</a>

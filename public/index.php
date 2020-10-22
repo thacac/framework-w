@@ -16,6 +16,7 @@ if (!file_exists('../app/config.php')){
 
 //configuration
 require '../app/config.php';
+require '../app/routes.php';
 
 //instancie notre appli en lui passant la config et les routes
 $app = new W\App($w_routes, $w_config);

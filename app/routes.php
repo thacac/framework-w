@@ -1,27 +1,22 @@
 <?php
+/**
+ * Inclusions des fichiers
+ */
 
-$w_routes = [
-	//this format works only if multilang = false or for technical routes with no rendering
-	'nolang' => [
-		'method' => 'GET',
-		'controller' => 'Default#nolang',
-		'path' => '/',
-		'title'=> 'title page no multi'
-	],
-	
-	//this format works only if multilang = true
-	'index' => [
-		'method' => 'GET',
-		'controller' => 'Default#home',
-		'multi' => [
-			'fr' => [
-				'path' => '/',
-				'title' => 'Titre de la page en français'
-			],
-			'en' => [
-				'path' => '/',
-				'title' => 'english title'
-			]
-		]
-	]
-];
+require 'routes_front.php'; // Routes du front
+require 'routes_back.php'; // Routes du back
+
+/**
+ * Ajout des préfixes Front / Back devant le nom des Controllers
+ */
+// foreach($front_r as $r){
+// 	$r[2] = 'Front\\'.ucfirst(str_replace('Front', '', $r[2]));
+// 	$front_routes[] = $r;
+// }
+foreach($back_r as $r_name => $r_controller){
+	$r_controller['controller'] = 'Back\\'.ucfirst(str_replace('Back', '', $r_controller['controller']));
+	//set 
+	$back_routes[$w_config['back_rte_prefix'].$r_name] = $r_controller;
+}
+
+$w_routes = array_merge($front_r, $back_routes);

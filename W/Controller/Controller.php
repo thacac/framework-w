@@ -8,7 +8,7 @@ use W\Security\AuthorizationModel;
 /**
  * Le contrôleur de base à étendre
  */
-class Controller 
+class Controller
 {
 
 	/**
@@ -16,11 +16,30 @@ class Controller
 	 */
 	const PATH_VIEWS = '../app/Views';
 
-	public $pathLang;
+	/**
+	 * sous dossiers des langues pour les vues disponibles
+	 *
+	 * @var string
+	 */
+	public string $pathLang;
 
 	public function __construct()
 	{
-		$this->pathLang = (getApp()->getConfig('multilang')==true) ? '/'.getApp()->getLang() :  '';
+		$this->pathLang ='';
+		$app = getApp();
+		//si route n'appartient pas à backoffice, on recherche le
+		if(mb_strpos($app->getCurrentRoute(),$app->getConfig('back_rte_prefix')) === false){
+			$this->pathLang = (getApp()->getConfig('multilang') == true) ? '/' . $app->getLang() :  '';	
+		}
+		try {
+			if (!file_exists(self::PATH_VIEWS . $this->pathLang . '/')) {
+				if (getApp()->getConfig('multilang') == true) {
+					throw new \Exception('Les vues ne sont pas correctement organisées pour un contenu multilingue : "views\fr\...","views\en\..."',404);
+				}
+			}
+		} catch (\Exception $e) {
+			die($e->getMessage());
+		}
 	}
 
 	/**
@@ -43,22 +62,21 @@ class Controller
 		$router = $app->getRouter();
 		$routeUrl = $router->generate($routeName, $params);
 		$url = $routeUrl;
-		if($absolute){
+		if ($absolute) {
 			// Définit le protocol
 			$baseUrl = 'http';
-			if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
-				$baseUrl.= 's';
+			if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
+				$baseUrl .= 's';
+			} elseif (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
+				$baseUrl .= 's';
 			}
-			elseif(isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https'){
-				$baseUrl.= 's';
-			}
-			$baseUrl.= '://'.$_SERVER['HTTP_HOST'];
+			$baseUrl .= '://' . $_SERVER['HTTP_HOST'];
 
 			// On récupère le port si existant
-			if(isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] != '80') {
-				$baseUrl.= ':'. (int) $_SERVER['SERVER_PORT'];
+			if (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] != '80') {
+				$baseUrl .= ':' . (int) $_SERVER['SERVER_PORT'];
 			}
-			$url = $baseUrl.$routeUrl;
+			$url = $baseUrl . $routeUrl;
 		}
 		return $url;
 	}
@@ -70,7 +88,7 @@ class Controller
 	public function redirect($uri)
 	{
 		header("Location: $uri");
-		die();	
+		die();
 	}
 
 	/**
@@ -89,11 +107,12 @@ class Controller
 	 * @param string $message Le message que l'on souhaite afficher
 	 * @param string $level Le type de message flash (default, notice, info, success, danger, warning)
 	 */
-	public function flash($message, $level = 'info'){
+	public function flash($message, $level = 'info')
+	{
 
 		$allowLevel = ['default', 'notice', 'info', 'success', 'danger', 'warning'];
 
-		if(!in_array($level, $allowLevel)){
+		if (!in_array($level, $allowLevel)) {
 			$level = 'info';
 		}
 
@@ -133,7 +152,7 @@ class Controller
 		$flash_message = (isset($_SESSION['flash']) && !empty($_SESSION['flash'])) ? $_SESSION['flash'] : null;
 
 		// 
-		$app = getApp();		
+		$app = getApp();
 
 		// Rend certaines données disponibles à tous les vues
 		// accessible avec $w_user & $w_current_route dans les fichiers de vue
@@ -142,23 +161,24 @@ class Controller
 				'w_user' 		  => $this->getUser(),
 				'w_current_route' => $app->getCurrentRoute(),
 				'w_site_name'	  => $app->getConfig('site_name'),
-				'w_lang'	  => $app->getLang(),
-				'w_flash_message' => $flash_message,
+				'w_lang'	  	=> $app->getLang(),
+				'w_admin_pref'=> $app->getConfig('back_rte_prefix'),
+				'w_flash_message' => $flash_message
 			]
 		);
 
 		// Ajoute des données additionnelles à tous les templates
-		if(!empty($this->addDataViews) && is_array($this->addDataViews)){
+		if (!empty($this->addDataViews) && is_array($this->addDataViews)) {
 			$engine->addData($this->addDataViews);
 		}
 
 		// Retire l'éventuelle extension .php
 		$file = str_replace('.php', '', $file);
 		// Affiche le template en fonction de la langue
-		echo $engine->render($this->pathLang.$file, $data);
-		
+		echo $engine->render($this->pathLang . $file, $data);
+
 		// Supprime les messages flash pour qu'ils n'apparaissent qu'une fois
-		if(isset($_SESSION['flash'])) {
+		if (isset($_SESSION['flash'])) {
 			unset($_SESSION['flash']);
 		}
 		die();
@@ -168,7 +188,7 @@ class Controller
 	 * Alias de méthode
 	 */
 	public function render($file, array $data = array())
-	{		
+	{
 		$this->show($file, $data);
 	}
 
@@ -178,12 +198,11 @@ class Controller
 	public function showForbidden($error_message = null)
 	{
 		header('HTTP/1.0 403 Forbidden');
-		
-		$file = self::PATH_VIEWS.$this->pathLang.'/w_errors/403.php';
-		if(file_exists($file)){
+
+		$file = self::PATH_VIEWS . $this->pathLang . '/w_errors/403.php';
+		if (file_exists($file)) {
 			$this->show('/w_errors/403', ['error_message' => $error_message ?? '']);
-		}
-		else {
+		} else {
 			die('403');
 		}
 	}
@@ -203,11 +222,10 @@ class Controller
 	{
 		header('HTTP/1.0 404 Not Found');
 
-		$file = self::PATH_VIEWS.$this->pathLang.'/w_errors/404.php';
-		if(file_exists($file)){
+		$file = self::PATH_VIEWS . $this->pathLang . '/w_errors/404.php';
+		if (file_exists($file)) {
 			$this->show('/w_errors/404', ['error_message' => $error_message ?? '']);
-		}
-		else {
+		} else {
 			die('404');
 		}
 	}
@@ -239,12 +257,12 @@ class Controller
 	 */
 	public function allowTo($roles, $route_to_redirect = null, $session_key = 'user', $error_message = null)
 	{
-		if (!is_array($roles)){
+		if (!is_array($roles)) {
 			$roles = [$roles];
 		}
 		$authorizationModel = new AuthorizationModel($session_key);
-		foreach($roles as $role){
-			if ($authorizationModel->isGranted($role, $route_to_redirect)){
+		foreach ($roles as $role) {
+			if ($authorizationModel->isGranted($role, $route_to_redirect)) {
 				return true;
 			}
 		}
@@ -260,10 +278,9 @@ class Controller
 	{
 		header('Content-type: application/json');
 		$json = json_encode($data, JSON_PRETTY_PRINT);
-		if($json){
+		if ($json) {
 			die($json);
-		}
-		else {
+		} else {
 			die('Error in json encoding');
 		}
 	}
@@ -286,5 +303,4 @@ class Controller
 		$app = getApp();
 		return $app->getBasePath() . '/assets/' . ltrim($path, '/');
 	}
-
 }

@@ -33,7 +33,6 @@ class ConnectionModel
 		
 		try {
 
-
 			 // for retrocompatibility
 			$db_charset = 'SET NAMES ';
 			$db_charset.= $app->getConfig('db_charset') ?? 'utf8';
